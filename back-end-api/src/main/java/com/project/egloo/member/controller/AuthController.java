@@ -43,6 +43,11 @@ public class AuthController {
         return new ResponseEntity<>(new TokenResponse(jwt), httpHeaders, HttpStatus.OK);
     }
 
-
+    @PostMapping("/social/login")
+    public ResponseEntity<TokenResponse> socialMemberInfo(String token) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + token);
+        return new ResponseEntity<>(new TokenResponse(token), httpHeaders, HttpStatus.OK);
+    }
 
 }
