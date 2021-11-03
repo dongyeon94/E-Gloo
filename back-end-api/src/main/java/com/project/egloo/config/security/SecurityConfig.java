@@ -1,5 +1,6 @@
 package com.project.egloo.config.security;
 
+import com.project.egloo.config.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.project.egloo.config.jwt.JwtAccessDeniedHandler;
 import com.project.egloo.config.jwt.JwtAuthenticationEntryPoint;
 import com.project.egloo.config.jwt.JwtSecurityConfig;
@@ -33,11 +34,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final CustomOAuth2UserService oAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    @Bean
+    public HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository() {
+        return new HttpCookieOAuth2AuthorizationRequestRepository();
+    }
+
+
 
     @Override
     public void configure(WebSecurity web) {
@@ -88,10 +97,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .apply(new JwtSecurityConfig(tokenProvider));
 
-            httpSecurity.oauth2Login()
-            .userInfoEndpoint().userService(oAuth2UserService)
-            .and()
-            .successHandler(oAuth2SuccessHandler);
+            httpSecurity
+                .oauth2Login()
+                    .authorizationEndpoint()
+                        .baseUri("/oauth2/authorization")
+                        .authorizationRequestRepository(cookieAuthorizationRequestRepository())
+                        .and()
+//                    .redirectionEndpoint()
+//                        .baseUri("/oauth2/callback/*")
+//                        .and()
+                    .userInfoEndpoint()
+                        .userService(oAuth2UserService)
+                        .and()
+                    .successHandler(oAuth2SuccessHandler);
     }
 
     @Bean
